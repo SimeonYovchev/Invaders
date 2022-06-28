@@ -1,2 +1,2 @@
-# invaders
+# Invaders
 Space canvas game
