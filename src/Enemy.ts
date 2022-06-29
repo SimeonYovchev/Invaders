@@ -1,9 +1,10 @@
 import { Projectile } from './Projectile';
-import { removeElementFromArray } from './utils';
+import { removeElementFromArray, uuid } from './utils';
 
 export class Enemy {
   public alive: boolean = true;
   private _projectiles: Projectile[] = [];
+  public id: string = uuid();
   // private _health = 100;
   // public damage = 50;
 

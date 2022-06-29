@@ -2,7 +2,7 @@ import { getCanvasContext } from './canvasContext';
 import { Player } from './Player';
 import { Projectile } from './Projectile';
 import { Enemy } from './Enemy';
-import { getRandomNumberInRange, removeElementFromArray } from './utils';
+import { getDistance, getRandomNumberInRange } from './utils';
 import { Star } from './Star';
 
 import impact2 from '../sounds/impact2.wav';
@@ -23,7 +23,6 @@ import './styles.scss';
   canvas.height = innerHeight;
 
   const player = new Player(canvas.width / 2, canvas.height / 2, 15, 'white', { x: 0, y: 0 });
-  // let projectiles: Projectile[] = [];
   let enemies: Enemy[] = [];
   const stars: Star[] = [];
 
@@ -85,6 +84,7 @@ import './styles.scss';
   const endGame = () => {
     cancelAnimationFrame(requestAnimationFrameID);
     clearInterval(spawnEnemiesInterval);
+    eventListeners.forEach((listener) => removeEventListener(listener.type, listener.cb));
   };
 
   const animate = () => {
@@ -122,11 +122,11 @@ import './styles.scss';
 
     enemies = enemies.filter((enemy) => enemy.alive);
 
-    enemies.forEach((enemy, enemyIndex) => {
+    enemies.forEach((enemy) => {
       enemy.update(ctx);
       enemy.draw(ctx);
 
-      const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+      const dist = getDistance({ x: player.x, y: player.y }, { x: enemy.x, y: enemy.y });
 
       if (dist - player.radius - enemy.radius < 1) {
         // An enemy hit Player
@@ -134,7 +134,7 @@ import './styles.scss';
 
         if (player.health > 0) {
           impact2Sound.play();
-          enemies = removeElementFromArray(enemies, enemyIndex);
+          enemies = enemies.filter((_enemy) => _enemy.id !== enemy.id);
         } else {
           impact4Sound.play();
           endGame();
@@ -142,16 +142,14 @@ import './styles.scss';
       }
 
       player.getProjectiles().forEach((projectile, projectileIndex) => {
-        const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
+        const dist = getDistance({ x: projectile.x, y: projectile.y }, { x: enemy.x, y: enemy.y });
 
         if (dist - enemy.radius - projectile.radius < 1) {
           // Player projectile hits an enemy
-          enemy.health = enemy.health - player.demage;
+          enemy.health -= player.demage;
 
-          // console.log(enemy.health);
           if (enemy.health <= 0) {
-            enemies = removeElementFromArray(enemies, enemyIndex);
-            // bombSound.play();
+            enemies = enemies.filter((_enemy) => _enemy.id !== enemy.id);
             if (bombSound.paused) {
               bombSound.play();
             } else {
@@ -161,7 +159,7 @@ import './styles.scss';
             enemy.showHealthLabel();
           }
 
-          player.removeProjectile(projectileIndex);
+          player.removeProjectile(projectile.id);
         }
       });
     });

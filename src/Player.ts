@@ -1,5 +1,4 @@
 import { Projectile } from './Projectile';
-import { removeElementFromArray } from './utils';
 import razorRay from '../sounds/razor-ray.wav';
 
 const gunSound = new Audio(razorRay);
@@ -62,23 +61,16 @@ export class Player {
   }
 
   addProjectile(projectile: Projectile) {
-    if (this._projectiles.length > 3) return;
+    this._projectiles = [...this._projectiles, projectile];
 
-    const newProjectiles = [...this._projectiles, projectile];
-    this._projectiles = newProjectiles;
-    // const gunSound = new Audio(razorRay);
-    // gunSound.play();
     if (gunSound.paused) {
       gunSound.play();
     } else {
       gunSound.currentTime = 0;
     }
-    // gunSound.pause();
-    // gunSound.currentTime = 0;
-    // gunSound.play();
   }
 
-  removeProjectile(index: number) {
-    this._projectiles = removeElementFromArray(this._projectiles, index);
+  removeProjectile(id: string) {
+    this._projectiles = this._projectiles.filter((projectile) => projectile.id !== id);
   }
 }
